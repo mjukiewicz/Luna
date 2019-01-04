@@ -13,96 +13,65 @@ sekwenty=["p->p=p","->p=p,p", "~p->p=p", "->p=p,~p", "p=q->p=r,(p=r)=(q=r)",
 conj=["="]
 
 def convert(sequent, input, output):
-    input_letter_list=prepare_set_of_elements(input)
-    output_letter_list=prepare_set_of_elements(output)
-    sequent_letter_list=prepare_set_of_elements(sequent)
-    #if "A.B" in input_letter_list:
-    for i in range(len(sequent_letter_list)):
-        if any(x in sequent_letter_list[i] for x in conj):
-            dic=[]
-            dic.append(["A.B", sequent_letter_list[i]])
-            center=int((len(sequent_letter_list[i])-1)/2)
-            dic.append(["A", sequent_letter_list[i][:center]]) #uruchomić to tyle razy ile wystepuje
-            dic.append(["B", sequent_letter_list[i][center+1:]])
-            for k in [x for x in range(len(sequent_letter_list)) if sequent_letter_list[x]==sequent_letter_list[i][:center]]:
-                temp=sequent_letter_list[:]
-                temp[i]="A.B"
-                temp[k]="A"
+    sequent_list=prepare_set_of_elements(sequent)
+
+    for i in range(len(sequent_list)):
+        center=int((len(sequent_list[i])-1)/2)
+        if any(x in sequent_list[i] for x in conj):
+            dic=create_dic(sequent_list[i],sequent_list[i][:center],sequent_list[i][center+1:])
+            for k in [x for x in range(len(sequent_list)) if sequent_list[x]==sequent_list[i][:center]]:
+                temp=create_temp_formula(sequent_list[:],counterA=k,counterAB=i)
                 niewiem(dic, sequent, input, output, temp)
 
-            dic=[]
-            dic.append(["A.B", sequent_letter_list[i]])
-            center=int((len(sequent_letter_list[i])-1)/2)
-            dic.append(["A", sequent_letter_list[i][:center]]) #uruchomić to tyle razy ile wystepuje
-            dic.append(["B", sequent_letter_list[i][center+1:]])
-            for k in [x for x in range(len(sequent_letter_list)) if sequent_letter_list[x]==sequent_letter_list[i][center+1:]]:
-                temp=sequent_letter_list[:]
-                temp[i]="A.B"
-                temp[k]="B"
+            dic=create_dic(sequent_list[i],sequent_list[i][:center],sequent_list[i][center+1:])
+            for k in [x for x in range(len(sequent_list)) if sequent_list[x]==sequent_list[i][center+1:]]:
+                temp=create_temp_formula(sequent_list[:],counterB=k,counterAB=i)
                 niewiem(dic, sequent, input, output,temp)
 
-            dic=[]
-            dic.append(["A.B", sequent_letter_list[i]])
-            center=int((len(sequent_letter_list[i])-1)/2)
-            dic.append(["A", sequent_letter_list[i][:center]])
-            dic.append(["B", sequent_letter_list[i][center+1:]])
-            for k in [x for x in range(len(sequent_letter_list)) if sequent_letter_list[x]==sequent_letter_list[i][:center]]:
-                for l in [x for x in range(len(sequent_letter_list)) if sequent_letter_list[x]==sequent_letter_list[i][center+1:]]:
-                    temp=sequent_letter_list[:]
-                    temp[i]="A.B"
-                    temp[k]="A"
-                    temp[l]="B"
+            dic=create_dic(sequent_list[i],sequent_list[i][:center],sequent_list[i][center+1:])
+            for k in [x for x in range(len(sequent_list)) if sequent_list[x]==sequent_list[i][:center]]:
+                for l in [x for x in range(len(sequent_list)) if sequent_list[x]==sequent_list[i][center+1:]]:
+                    temp=sequent_list[:]
+                    temp=create_temp_formula(sequent_list[:],counterA=k,counterB=l,counterAB=i)
                     niewiem(dic, sequent, input, output,temp)
-        for j in range(len(sequent_letter_list)):
-            if not i==j and not sequent_letter_list[i]=="→" and not sequent_letter_list[j]=="→":
-                dic=[]
-                temp=sequent_letter_list[:]
-                dic.append(["A", sequent_letter_list[i]])
-                dic.append(["B", sequent_letter_list[j]])
-                dic.append(["A.B", sequent_letter_list[i]+"="+sequent_letter_list[j]]) #poprawic znak r
-                temp[i]="A"
-                temp[j]="B"
+
+        for j in range(len(sequent_list)):
+            if not i==j and not sequent_list[i]=="→" and not sequent_list[j]=="→":
+                dic=create_dic(sequent_list[i]+"="+sequent_list[j],sequent_list[i],sequent_list[j]) #poprawic znak r
+                temp=create_temp_formula(sequent_list[:],counterA=i,counterB=j)
                 niewiem(dic, sequent, input, output, temp)
 
     else:
-        for i in range(len(sequent_letter_list)):
-            for j in range(len(sequent_letter_list)):
-                if not i==j and not sequent_letter_list[i]=="→" and not sequent_letter_list[j]=="→":
-                    dic=[]
-                    temp=sequent_letter_list[:]
-                    dic.append(["A", sequent_letter_list[i]])
-                    dic.append(["B", sequent_letter_list[j]])
-                    dic.append(["A.B", sequent_letter_list[i]+"="+sequent_letter_list[j]]) #poprawic znak r
-                    temp[i]="A"
-                    temp[j]="B"
+        for i in range(len(sequent_list)):
+            for j in range(len(sequent_list)):
+                if not i==j and not sequent_list[i]=="→" and not sequent_list[j]=="→":
+                    dic=create_dic(sequent_list[i]+"="+sequent_list[j],sequent_list[i],sequent_list[j]) #poprawic znak r
+                    temp=create_temp_formula(sequent_list[:],counterA=i,counterB=j)
                     niewiem(dic, sequent, input, output, temp)
 
 def niewiem(dic, sequent, input, output, temp):
-    output_letter_list=prepare_set_of_elements(output)
+    output_list=prepare_set_of_elements(output)
     temp,D,G=extract_D_and_G(temp)
     temp, dic = add_D_and_G(temp, D, G, dic)
     if ",".join(temp).replace(",→,","→")==input:
-        results.append(translate_formula(sequent,dic, output_letter_list))
-        print(input, translate_formula(sequent,dic, output_letter_list))
+        results.append(translate_formula(sequent,dic, output_list))
+        print(input, translate_formula(sequent,dic, output_list))
 
-def create_dic(formula, formula2=""):
-    base=["A","B","A.B","→"]
-    if formula2=="":
-        center=int((len(formula)-1)/2)
-        seq=[formula[:center], formula[center+1:], formula,"→"]
-    else:
-        seq=[formula, formula2, formula+"="+formula2,"→"] #zrobic cos z kropka
-    dic= [[base[i],seq[i]] for i in range(len(base))]
-    return dic
-
-def first_translation(dic, formula):
-    for i in range(len(formula)):
-        for j in range(len(dic)):
-            if formula[i]==dic[j][1]:
-                formula[i]=dic[j][0]
-                del dic[j]
-                break
+def create_temp_formula(formula,counterA="",counterB="",counterAB=""):
+    if not counterA=="":
+        formula[counterA]="A"
+    if not counterB=="":
+        formula[counterB]="B"
+    if not counterAB=="":
+        formula[counterAB]="A.B"
     return formula
+
+def create_dic(AB,A,B):
+    dic=[]
+    dic.append(["A.B", AB])
+    dic.append(["A", A]) #uruchomić to tyle razy ile wystepuje
+    dic.append(["B", B])
+    return dic
 
 def add_D_and_G(input_formula,D,G, dic):
     dic.append(D)
@@ -111,8 +80,8 @@ def add_D_and_G(input_formula,D,G, dic):
     input_formula.insert(len(input_formula),"G")
     return input_formula, dic
 
-def translate_formula(formula, dic, output_letter_list):
-    output=output_letter_list[:]
+def translate_formula(formula, dic, output_list):
+    output=output_list[:]
     for i in range(len(output)):
         for j in range(len(dic)):
             if not output[i] == "→" and output[i]==dic[j][0]:
@@ -192,4 +161,4 @@ for i in range(len(base1)):
     print(i)
     convert(sekwent,base1[i],base2[i])
 
-print(set(results))
+print(set(results), len(set(results)))
