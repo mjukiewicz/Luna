@@ -6,47 +6,54 @@ class formulaConvertion():
         self.sequent=sequent
         self.input=input
         self.output=output
-        self.sequent_list=self.prepare_set_of_elements(sequent)
+        self.seq_list=self.prepare_set_of_elements(sequent)
         self.results=[]
 
     def convert_conditions(self):
-        for i in range(len(self.sequent_list)):
-            center=int((len(self.sequent_list[i])-1)/2)
-            if any(x in self.sequent_list[i] for x in conj):
-                dic=self.create_dic(self.sequent_list[i],self.sequent_list[i][:center],self.sequent_list[i][center+1:])
-                for k in [x for x in range(len(self.sequent_list)) if self.sequent_list[x]==self.sequent_list[i][:center]]:
-                    temp=self.create_temp_formula(self.sequent_list[:],counterA=k,counterAB=i)
-                    temp=self.extract_and_add_noise(dic,temp)
-                    self.check_result(dic,temp)
-
-                dic=self.create_dic(self.sequent_list[i],self.sequent_list[i][:center],self.sequent_list[i][center+1:])
-                for k in [x for x in range(len(self.sequent_list)) if self.sequent_list[x]==self.sequent_list[i][center+1:]]:
-                    temp=self.create_temp_formula(self.sequent_list[:],counterB=k,counterAB=i)
-                    temp=self.extract_and_add_noise(dic,temp)
-                    self.check_result(dic,temp)
-
-                dic=self.create_dic(self.sequent_list[i],self.sequent_list[i][:center],self.sequent_list[i][center+1:])
-                for k in [x for x in range(len(self.sequent_list)) if self.sequent_list[x]==self.sequent_list[i][:center]]:
-                    for l in [x for x in range(len(self.sequent_list)) if self.sequent_list[x]==self.sequent_list[i][center+1:]]:
-                        temp=self.create_temp_formula(self.sequent_list[:],counterA=k,counterB=l,counterAB=i)
-                        temp=self.extract_and_add_noise(dic,temp)
-                        self.check_result(dic,temp)
-
-            for j in range(len(self.sequent_list)):
-                if not i==j and not self.sequent_list[i]=="→" and not self.sequent_list[j]=="→":
-                    dic=self.create_dic(self.sequent_list[i]+"="+self.sequent_list[j],self.sequent_list[i],self.sequent_list[j]) #poprawic znak r
-                    temp=self.create_temp_formula(self.sequent_list[:],counterA=i,counterB=j)
-                    temp=self.extract_and_add_noise(dic,temp)
-                    self.check_result(dic,temp)
-        else:
-            for i in range(len(self.sequent_list)):
-                for j in range(len(self.sequent_list)):
-                    if not i==j and not self.sequent_list[i]=="→" and not self.sequent_list[j]=="→":
-                        dic=self.create_dic(self.sequent_list[i]+"="+self.sequent_list[j],self.sequent_list[i],self.sequent_list[j]) #poprawic znak r
-                        temp=self.create_temp_formula(self.sequent_list[:],counterA=i,counterB=j)
-                        temp=self.extract_and_add_noise(dic,temp)
-                        self.check_result(dic,temp)
+        for i in range(len(self.seq_list)):
+            center=int((len(self.seq_list[i])-1)/2)
+            if any(x in self.seq_list[i] for x in conj):
+                self.condition1(center,i)
+                self.condition2(center,i)
+                self.condition3(center,i)
+            for j in range(len(self.seq_list)):
+                if not i==j and not self.seq_list[i]=="→" and not self.seq_list[j]=="→":
+                    conjunction=[i for i in conj for j in self.sequent if i==j][0]
+                    self.condition4(center,i,j, conjunction)
         return self.results
+
+    def condition1(self, center,i):
+        dic=self.create_dic(self.seq_list[i], self.seq_list[i][:center], self.seq_list[i][center+1:])
+        for k in [x for x in range(len(self.seq_list))
+            if self.seq_list[x]==self.seq_list[i][:center]]:
+                temp=self.create_temp_formula(self.seq_list[:],counterA=k,counterAB=i)
+                temp=self.extract_and_add_noise(dic,temp)
+                self.check_result(dic,temp)
+
+    def condition2(self,center,i):
+        dic=self.create_dic(self.seq_list[i], self.seq_list[i][:center], self.seq_list[i][center+1:])
+        for k in [x for x in range(len(self.seq_list))
+            if self.seq_list[x]==self.seq_list[i][center+1:]]:
+                temp=self.create_temp_formula(self.seq_list[:],counterB=k,counterAB=i)
+                temp=self.extract_and_add_noise(dic,temp)
+                self.check_result(dic,temp)
+
+    def condition3(self, center, i):
+        dic=self.create_dic(self.seq_list[i],self.seq_list[i][:center],self.seq_list[i][center+1:])
+        for k in [x for x in range(len(self.seq_list))
+                  if self.seq_list[x]==self.seq_list[i][:center]]:
+            for l in [x for x in range(len(self.seq_list))
+                      if self.seq_list[x]==self.seq_list[i][center+1:]]:
+                temp=self.create_temp_formula(self.seq_list[:],counterA=k,counterB=l,counterAB=i)
+                temp=self.extract_and_add_noise(dic,temp)
+                self.check_result(dic,temp)
+
+    def condition4(self, center, i, j, conjunction):
+        dic=self.create_dic(self.seq_list[i]+conjunction+self.seq_list[j], self.seq_list[i],self.seq_list[j])
+        if not dic[0][1][0]=="="and not dic[0][1][-1]=="=":
+            temp=self.create_temp_formula(self.seq_list[:],counterA=i,counterB=j)
+            temp=self.extract_and_add_noise(dic,temp)
+            self.check_result(dic,temp)
 
     def extract_and_add_noise(self,dic, temp):
         temp,D,G=self.extract_D_and_G(temp)
@@ -56,7 +63,8 @@ class formulaConvertion():
     def check_result(self,dic,temp):
         output_list=self.prepare_set_of_elements(self.output)
         if ",".join(temp).replace(",→,","→")==self.input:
-            self.results.append(self.translate_formula(self.sequent,dic, output_list))
+            translated_formula=self.translate_formula(self.sequent,dic, output_list)
+            self.results.append(translated_formula)
 
     def create_temp_formula(self,formula,counterA="",counterB="",counterAB=""):
         if not counterA=="":
@@ -88,7 +96,7 @@ class formulaConvertion():
                 if not output[i] == "→" and output[i]==dic[j][0]:
                     output[i]=dic[j][1]
         output=self.remove_comas(output) #czy to potrzebne?
-        return ",".join(output).replace(",→,","→").replace("→,","→")
+        return ",".join(output).replace(",→,","→").replace("→,","→").replace(",→","→")
 
     def extract_D_and_G(self,input_formula):
         seq_sign=input_formula.index("→")

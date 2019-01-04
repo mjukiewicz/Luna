@@ -7,7 +7,7 @@ base2=["A,B,D→G", "B,D→A.B,G", "A,D→A.B,G", "A,A.B,D→G", "B,D→A,G", "A
       "A.B,D→B,G", "B,D→A,G", "D→A,B,G", "A,B,D→G", "D→A,B,G", "A,A.B,D→B,G",
       "B,A.B,D→A,G", "D→A,B,A.B,G", "D→A,B,A.B,G", "A,B,D→A.B,G", "B,A.B,D→A,G"]
 
-sekwenty=["p->p=p","->p=p,p", "~p->p=p", "->p=p,~p", "p=q->p=r,(p=r)=(q=r)",
+sek_test=["p->p=p","->p=p,p", "~p->p=p", "->p=p,~p", "p=q->p=r,(p=r)=(q=r)",
           "p=q,p=r->(q=r)=(p=r)", "p=q->~(p=r),(q=r)=(p=r)",
           "p=q,~(p=r)->(q=r)=(p=r)", "p->~(p^p)", "->~(p^p),p", "~p->~(p^p)",
           "->~(p^p),~p", "~(p^q)->p,~((q^r)^(p^r))",'p,p=p->p']
@@ -54,7 +54,7 @@ def transfer_between_lists(subformula1,subformula2):
             subformula1.remove(i)
     return subformula1, subformula2
 
-for j in sekwenty:
+for j in sek_test:
     sekwent=prepare_formula(j)
     results=[]
     for i in range(len(base1)):
