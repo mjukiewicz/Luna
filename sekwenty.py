@@ -1,7 +1,6 @@
 conj=["=","^"]
 
 class formulaConvertion():
-
     def __init__(self,sequent, input, output):
         self.sequent=sequent
         self.input=input
@@ -13,47 +12,38 @@ class formulaConvertion():
         for i in range(len(self.seq_list)):
             center=int((len(self.seq_list[i])-1)/2)
             if any(x in self.seq_list[i] for x in conj):
-                self.condition1(center,i)
+                self.condition1(center,i,self.seq_list[i][:center])
+                self.condition1(center,i,self.seq_list[i][center+1:])
                 self.condition2(center,i)
-                self.condition3(center,i)
             for j in range(len(self.seq_list)):
                 if not i==j and not self.seq_list[i]=="→" and not self.seq_list[j]=="→":
                     conjunction=[i for i in conj for j in self.sequent if i==j][0]
-                    self.condition4(center,i,j, conjunction)
+                    self.condition3(center,i,j, conjunction)
         return self.results
 
-    def condition1(self, center,i):
+    def condition1(self, center,i, check):
         dic=self.create_dic(self.seq_list[i], self.seq_list[i][:center], self.seq_list[i][center+1:])
         for k in [x for x in range(len(self.seq_list))
-            if self.seq_list[x]==self.seq_list[i][:center]]:
-                temp=self.create_temp_formula(self.seq_list[:],counterA=k,counterAB=i)
-                temp=self.extract_and_add_noise(dic,temp)
-                self.check_result(dic,temp)
+            if self.seq_list[x]==check]:
+                self.condition_processing(dic,k,"",i)
 
-    def condition2(self,center,i):
-        dic=self.create_dic(self.seq_list[i], self.seq_list[i][:center], self.seq_list[i][center+1:])
-        for k in [x for x in range(len(self.seq_list))
-            if self.seq_list[x]==self.seq_list[i][center+1:]]:
-                temp=self.create_temp_formula(self.seq_list[:],counterB=k,counterAB=i)
-                temp=self.extract_and_add_noise(dic,temp)
-                self.check_result(dic,temp)
-
-    def condition3(self, center, i):
+    def condition2(self, center, i):
         dic=self.create_dic(self.seq_list[i],self.seq_list[i][:center],self.seq_list[i][center+1:])
         for k in [x for x in range(len(self.seq_list))
                   if self.seq_list[x]==self.seq_list[i][:center]]:
             for l in [x for x in range(len(self.seq_list))
                       if self.seq_list[x]==self.seq_list[i][center+1:]]:
-                temp=self.create_temp_formula(self.seq_list[:],counterA=k,counterB=l,counterAB=i)
-                temp=self.extract_and_add_noise(dic,temp)
-                self.check_result(dic,temp)
+                self.condition_processing(dic,k,l,i)
 
-    def condition4(self, center, i, j, conjunction):
+    def condition3(self, center, i, j, conjunction):
         dic=self.create_dic(self.seq_list[i]+conjunction+self.seq_list[j], self.seq_list[i],self.seq_list[j])
         if not dic[0][1][0]=="="and not dic[0][1][-1]=="=":
-            temp=self.create_temp_formula(self.seq_list[:],counterA=i,counterB=j)
-            temp=self.extract_and_add_noise(dic,temp)
-            self.check_result(dic,temp)
+            self.condition_processing(dic,i,j,"")
+
+    def condition_processing(self,dic,countA,countB, countAB):
+        temp=self.create_temp_formula(self.seq_list[:],countA,countB, countAB)
+        temp=self.extract_and_add_noise(dic,temp)
+        self.check_result(dic,temp)
 
     def extract_and_add_noise(self,dic, temp):
         temp,D,G=self.extract_D_and_G(temp)
@@ -67,20 +57,13 @@ class formulaConvertion():
             self.results.append(translated_formula)
 
     def create_temp_formula(self,formula,counterA="",counterB="",counterAB=""):
-        if not counterA=="":
-            formula[counterA]="A"
-        if not counterB=="":
-            formula[counterB]="B"
-        if not counterAB=="":
-            formula[counterAB]="A.B"
+        if not counterA=="": formula[counterA]="A"
+        if not counterB=="": formula[counterB]="B"
+        if not counterAB=="": formula[counterAB]="A.B"
         return formula
 
     def create_dic(self,AB,A,B):
-        dic=[]
-        dic.append(["A.B", AB])
-        dic.append(["A", A])
-        dic.append(["B", B])
-        return dic
+        return [["A.B", AB], ["A", A], ["B", B]]
 
     def add_D_and_G(self,input_formula,D,G, dic):
         dic.append(D)
@@ -113,10 +96,7 @@ class formulaConvertion():
         return self.remove_comas(output_formula),["D","".join(D)],["G","".join(G)]
 
     def remove_comas(self,formula_with_comas):
-        for i in formula_with_comas[:]:
-            if i=="":
-                formula_with_comas.remove(i)
-        return formula_with_comas
+        return [i for i in formula_with_comas[:] if not i==""]
 
     def prepare_set_of_elements(self,formula):
         return formula.replace("→",",→,").split(",")
