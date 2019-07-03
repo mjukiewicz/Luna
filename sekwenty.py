@@ -19,7 +19,7 @@ class formulaConvertion():
                 if not i==j and not self.seq_list[i]=="→" and not self.seq_list[j]=="→":
                     conjunction=[i for i in conj for j in self.sequent if i==j][0]
                     self.condition3(center,i,j, conjunction)
-        return self.results
+        return [x for x in self.results if x != []]
 
     def condition1(self, center,i, check):
         dic=self.create_dic(self.seq_list[i], self.seq_list[i][:center], self.seq_list[i][center+1:])
@@ -79,7 +79,14 @@ class formulaConvertion():
                 if not output[i] == "→" and output[i]==dic[j][0]:
                     output[i]=dic[j][1]
         output=self.remove_comas(output) #czy to potrzebne?
-        return ",".join(output).replace(",→,","→").replace("→,","→").replace(",→","→")
+        allowed=True
+        for i in output:
+            if i.count("=")>1:
+                allowed=False
+        if allowed:
+            return ",".join(output).replace(",→,","→").replace("→,","→").replace(",→","→")
+        else:
+            return []
 
     def extract_D_and_G(self,input_formula):
         seq_sign=input_formula.index("→")
@@ -93,7 +100,7 @@ class formulaConvertion():
                 elif i>seq_sign:
                     G.append(input_formula[i])
                 output_formula.remove(input_formula[i])
-        return self.remove_comas(output_formula),["D","".join(D)],["G","".join(G)]
+        return self.remove_comas(output_formula),["D",",".join(D)],["G",",".join(G)]
 
     def remove_comas(self,formula_with_comas):
         return [i for i in formula_with_comas[:] if not i==""]
